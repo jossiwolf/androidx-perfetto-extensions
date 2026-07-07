@@ -1,4 +1,4 @@
-id: androidx.perfetto.ShowLongTasks
+id: androidx.ShowLongTasks
 name: Show Long Tasks
 run:
   - id: dev.perfetto.RunQueryAndShowTab

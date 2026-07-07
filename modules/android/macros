@@ -1,7 +1,7 @@
 {
   "macros": [
     {
-      "id": "androidx.perfetto.AndroidStartupAnalysis",
+      "id": "androidx.AndroidStartupAnalysis",
       "name": "Android Startup Analysis",
       "run": [
         {
@@ -13,7 +13,7 @@
       ]
     },
     {
-      "id": "androidx.perfetto.ShowBinderTransactions",
+      "id": "androidx.ShowBinderTransactions",
       "name": "Show Binder Transactions",
       "run": [
         {

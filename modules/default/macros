@@ -1,7 +1,7 @@
 {
   "macros": [
     {
-      "id": "androidx.perfetto.ClearFilters",
+      "id": "androidx.ClearFilters",
       "name": "Clear Filters",
       "run": [
         {
@@ -11,7 +11,7 @@
       ]
     },
     {
-      "id": "androidx.perfetto.ShowAllTracks",
+      "id": "androidx.ShowAllTracks",
       "name": "Show All Tracks",
       "run": [
         {

@@ -1,7 +1,7 @@
 {
   "sql_modules": [
     {
-      "name": "androidx.perfetto.chrome_helpers",
+      "name": "androidx.chrome_helpers",
       "sql": "CREATE PERFETTO VIEW IF NOT EXISTS janky_frames AS SELECT * FROM slice WHERE name = 'FramePresented' AND dur > 16666666;"
     }
   ]

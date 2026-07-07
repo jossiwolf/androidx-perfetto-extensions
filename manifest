@@ -1,6 +1,6 @@
 {
   "name": "AndroidX Perfetto Extensions",
-  "namespace": "androidx.perfetto",
+  "namespace": "androidx",
   "features": [
     {
       "name": "macros"

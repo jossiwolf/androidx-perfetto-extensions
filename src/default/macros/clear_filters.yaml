@@ -1,4 +1,4 @@
-id: androidx.perfetto.ClearFilters
+id: androidx.ClearFilters
 name: Clear Filters
 run:
   - id: dev.perfetto.ClearFilters
