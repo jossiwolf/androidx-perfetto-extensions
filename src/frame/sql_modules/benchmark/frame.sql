@@ -43,7 +43,10 @@ SELECT
   (COALESCE(
     (SELECT s.ts + s.dur FROM slice s WHERE s.id = f.draw_frame_id),
     (SELECT s.ts + s.dur FROM slice s WHERE s.id = f.do_frame_id)
-  ) - f.ts) / 1e6 AS cpu_duration_ms,
+  ) - COALESCE(
+    (SELECT s.ts FROM slice s WHERE s.id = f.do_frame_id),
+    f.ts
+  )) / 1e6 AS cpu_duration_ms,
   (SELECT s.dur FROM slice s WHERE s.id = f.do_frame_id) / 1e6 AS ui_duration_ms,
   overrun.overrun / 1e6 AS frame_overrun_ms,
   (CASE

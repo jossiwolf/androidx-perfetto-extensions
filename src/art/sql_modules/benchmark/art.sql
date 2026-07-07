@@ -44,17 +44,17 @@ WITH
     JOIN thread_track ON slice.track_id = thread_track.id
     JOIN thread USING(utid)
     JOIN process USING(upid)
-    WHERE slice.name GLOB 'JIT Compiling*'
-       OR slice.name GLOB 'VerifyClass*'
+    WHERE slice.name GLOB 'JIT compiling*'
+       OR slice.name GLOB 'VerifyClass *'
        OR slice.name GLOB 'L*;'
   ),
   jit AS (
     SELECT upid, COALESCE(SUM(dur) / 1e6, 0.0) AS sum_dur, COUNT(1) AS count
-    FROM art_slices WHERE slice_name GLOB 'JIT Compiling*' GROUP BY upid
+    FROM art_slices WHERE slice_name GLOB 'JIT compiling*' GROUP BY upid
   ),
   verify AS (
     SELECT upid, COALESCE(SUM(dur) / 1e6, 0.0) AS sum_dur, COUNT(1) AS count
-    FROM art_slices WHERE slice_name GLOB 'VerifyClass*' GROUP BY upid
+    FROM art_slices WHERE slice_name GLOB 'VerifyClass *' GROUP BY upid
   ),
   load AS (
     SELECT upid, COALESCE(SUM(dur) / 1e6, 0.0) AS sum_dur, COUNT(1) AS count
