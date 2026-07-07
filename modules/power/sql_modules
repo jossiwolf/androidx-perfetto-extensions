@@ -1,0 +1,8 @@
+{
+  "sql_modules": [
+    {
+      "name": "androidx.benchmark.power",
+      "sql": "--\n-- Copyright 2026 The Android Open Source Project\n--\n-- Licensed under the Apache License, Version 2.0 (the \"License\");\n-- you may not use this file except in compliance with the License.\n-- You may obtain a copy of the License at\n--\n--     https://www.apache.org/licenses/LICENSE-2.0\n--\n-- Unless required by applicable law or agreed to in writing, software\n-- distributed under the License is distributed on an \"AS IS\" BASIS,\n-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n-- See the License for the specific language governing permissions and\n-- limitations under the License.\n--\n\n-- Power rail metrics (energy and average power) calculated over the entire trace.\nCREATE PERFETTO TABLE androidx_power_metrics(\n  -- Name of the power rail counter track.\n  track_name STRING,\n  -- Energy consumed in microwatt-seconds (uWs) over the trace.\n  energy_uws DOUBLE,\n  -- Average power in microwatts (uW) over the trace.\n  power_uw DOUBLE\n) AS\nSELECT\n  t.name AS track_name,\n  MAX(c.value) - MIN(c.value) AS energy_uws,\n  IIF(\n    MAX(c.ts) = MIN(c.ts),\n    0.0,\n    (MAX(c.value) - MIN(c.value)) / ((MAX(c.ts) - MIN(c.ts)) / 1000000.0)\n  ) AS power_uw\nFROM counter c\nJOIN counter_track t ON c.track_id = t.id\nWHERE t.name GLOB 'power.*'\nGROUP BY t.name;"
+    }
+  ]
+}

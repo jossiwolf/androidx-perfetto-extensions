@@ -1,5 +1,19 @@
 name: AndroidX Perfetto Extensions
 namespace: androidx
 modules:
-  - id: androidx
-    name: AndroidX
+  - id: jank
+    name: Jank
+  - id: frame
+    name: Frame
+  - id: startup
+    name: Startup
+  - id: trace
+    name: Trace
+  - id: art
+    name: Art
+  - id: power
+    name: Power
+  - id: battery
+    name: Battery
+  - id: memory
+    name: Memory

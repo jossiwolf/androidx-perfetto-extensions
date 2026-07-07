@@ -1,0 +1,8 @@
+{
+  "sql_modules": [
+    {
+      "name": "androidx.benchmark.battery",
+      "sql": "--\n-- Copyright 2026 The Android Open Source Project\n--\n-- Licensed under the Apache License, Version 2.0 (the \"License\");\n-- you may not use this file except in compliance with the License.\n-- You may obtain a copy of the License at\n--\n--     https://www.apache.org/licenses/LICENSE-2.0\n--\n-- Unless required by applicable law or agreed to in writing, software\n-- distributed under the License is distributed on an \"AS IS\" BASIS,\n-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n-- See the License for the specific language governing permissions and\n-- limitations under the License.\n--\n\n-- Battery discharge metrics (start, end, and diff in mAh) calculated over the entire trace.\nCREATE PERFETTO TABLE androidx_battery_discharge(\n  -- Start battery charge in mAh.\n  start_mah DOUBLE,\n  -- End battery charge in mAh.\n  end_mah DOUBLE,\n  -- Total discharge in mAh.\n  diff_mah DOUBLE\n) AS\nSELECT\n  MAX(c.value) / 1000.0 AS start_mah,\n  MIN(c.value) / 1000.0 AS end_mah,\n  (MAX(c.value) - MIN(c.value)) / 1000.0 AS diff_mah\nFROM counter c\nJOIN counter_track t ON c.track_id = t.id\nWHERE t.name = 'batt.charge_uah';"
+    }
+  ]
+}

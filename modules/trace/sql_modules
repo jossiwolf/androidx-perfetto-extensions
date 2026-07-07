@@ -1,0 +1,8 @@
+{
+  "sql_modules": [
+    {
+      "name": "androidx.benchmark.trace",
+      "sql": "--\n-- Copyright 2026 The Android Open Source Project\n--\n-- Licensed under the Apache License, Version 2.0 (the \"License\");\n-- you may not use this file except in compliance with the License.\n-- You may obtain a copy of the License at\n--\n--     https://www.apache.org/licenses/LICENSE-2.0\n--\n-- Unless required by applicable law or agreed to in writing, software\n-- distributed under the License is distributed on an \"AS IS\" BASIS,\n-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n-- See the License for the specific language governing permissions and\n-- limitations under the License.\n--\n\n-- View exposing all trace slices with process and thread context.\n-- Useful for querying custom trace section durations.\nCREATE PERFETTO VIEW androidx_trace_slices(\n  -- Slice start timestamp.\n  ts TIMESTAMP,\n  -- Slice duration.\n  dur DURATION,\n  -- Slice name.\n  name STRING,\n  -- Process name.\n  process_name STRING,\n  -- Thread name.\n  thread_name STRING,\n  -- Internal process ID.\n  upid JOINID(process.id),\n  -- Internal thread ID.\n  utid JOINID(thread.id)\n) AS\nSELECT\n  slice.ts,\n  slice.dur,\n  slice.name,\n  process.name AS process_name,\n  thread.name AS thread_name,\n  process.upid,\n  thread.utid\nFROM slice\nJOIN thread_track ON slice.track_id = thread_track.id\nJOIN thread USING(utid)\nJOIN process USING(upid);"
+    }
+  ]
+}

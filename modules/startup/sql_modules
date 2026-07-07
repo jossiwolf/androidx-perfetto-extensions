@@ -1,0 +1,8 @@
+{
+  "sql_modules": [
+    {
+      "name": "androidx.benchmark.startup",
+      "sql": "--\n-- Copyright 2026 The Android Open Source Project\n--\n-- Licensed under the Apache License, Version 2.0 (the \"License\");\n-- you may not use this file except in compliance with the License.\n-- You may obtain a copy of the License at\n--\n--     https://www.apache.org/licenses/LICENSE-2.0\n--\n-- Unless required by applicable law or agreed to in writing, software\n-- distributed under the License is distributed on an \"AS IS\" BASIS,\n-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n-- See the License for the specific language governing permissions and\n-- limitations under the License.\n--\n\nINCLUDE PERFETTO MODULE android.startup.time_to_display;\n\n-- App startup timing metrics (TTID and TTFD) for all startups.\nCREATE PERFETTO TABLE androidx_startup_timing(\n  -- Startup ID.\n  startup_id LONG,\n  -- Package name of the app.\n  package_name STRING,\n  -- Startup type (cold, warm, hot).\n  startup_type STRING,\n  -- Time to initial display (TTID) in milliseconds.\n  time_to_initial_display_ms DOUBLE,\n  -- Time to full display (TTFD) in milliseconds (if reportFullyDrawn called).\n  time_to_full_display_ms DOUBLE\n) AS\nSELECT\n  startup_id,\n  package AS package_name,\n  startup_type,\n  time_to_initial_display / 1e6 AS time_to_initial_display_ms,\n  time_to_full_display / 1e6 AS time_to_full_display_ms\nFROM android_startups\nJOIN android_startup_time_to_display USING (startup_id);"
+    }
+  ]
+}
