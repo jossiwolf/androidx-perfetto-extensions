@@ -1,6 +1,6 @@
 {
-  "name": "Test Extensions",
-  "namespace": "dev.perfetto.test",
+  "name": "AndroidX Perfetto Extensions",
+  "namespace": "androidx.perfetto",
   "features": [
     {
       "name": "macros"

@@ -1,4 +1,4 @@
-id: dev.perfetto.test.ShowAllTracks
+id: androidx.perfetto.ShowAllTracks
 name: Show All Tracks
 run:
   - id: dev.perfetto.ShowAllTracks

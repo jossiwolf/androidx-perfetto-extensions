@@ -1,4 +1,4 @@
-id: dev.perfetto.test.AndroidStartupAnalysis
+id: androidx.perfetto.AndroidStartupAnalysis
 name: Android Startup Analysis
 run:
   - id: dev.perfetto.RunQueryAndShowTab

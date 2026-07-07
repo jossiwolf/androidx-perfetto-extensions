@@ -1,4 +1,4 @@
-id: dev.perfetto.test.ChromeFrameAnalysis
+id: androidx.perfetto.ChromeFrameAnalysis
 name: Chrome Frame Analysis
 run:
   - id: dev.perfetto.RunQueryAndShowTab

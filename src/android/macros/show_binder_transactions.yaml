@@ -1,4 +1,4 @@
-id: dev.perfetto.test.ShowBinderTransactions
+id: androidx.perfetto.ShowBinderTransactions
 name: Show Binder Transactions
 run:
   - id: dev.perfetto.RunQueryAndShowTab

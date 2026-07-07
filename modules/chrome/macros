@@ -1,7 +1,7 @@
 {
   "macros": [
     {
-      "id": "dev.perfetto.test.ChromeFrameAnalysis",
+      "id": "androidx.perfetto.ChromeFrameAnalysis",
       "name": "Chrome Frame Analysis",
       "run": [
         {
@@ -13,7 +13,7 @@
       ]
     },
     {
-      "id": "dev.perfetto.test.ShowLongTasks",
+      "id": "androidx.perfetto.ShowLongTasks",
       "name": "Show Long Tasks",
       "run": [
         {
