@@ -1,0 +1,13 @@
+# Perfetto binary
+trace_processor
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.unittest_cache/
+
+# OS files
+.DS_Store
