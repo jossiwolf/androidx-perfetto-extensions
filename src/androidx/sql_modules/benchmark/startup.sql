@@ -16,14 +16,12 @@
 
 INCLUDE PERFETTO MODULE android.startup.time_to_display;
 
--- Get app startup timing metrics (TTID and TTFD) for a given process/package.
-CREATE PERFETTO FUNCTION androidx_startup_timing(
-  -- Glob pattern matching the target package name.
-  process_glob STRING
-)
-RETURNS TABLE(
+-- App startup timing metrics (TTID and TTFD) for all startups.
+CREATE PERFETTO TABLE androidx_startup_timing(
   -- Startup ID.
   startup_id LONG,
+  -- Package name of the app.
+  package_name STRING,
   -- Startup type (cold, warm, hot).
   startup_type STRING,
   -- Time to initial display (TTID) in milliseconds.
@@ -33,9 +31,9 @@ RETURNS TABLE(
 ) AS
 SELECT
   startup_id,
+  package AS package_name,
   startup_type,
   time_to_initial_display / 1e6 AS time_to_initial_display_ms,
   time_to_full_display / 1e6 AS time_to_full_display_ms
 FROM android_startups
-JOIN android_startup_time_to_display USING (startup_id)
-WHERE package GLOB $process_glob;
+JOIN android_startup_time_to_display USING (startup_id);

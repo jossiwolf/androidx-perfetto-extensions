@@ -14,20 +14,13 @@
 -- limitations under the License.
 --
 
--- Get power rail metrics (energy and average power) for a given time range.
--- Queries counters starting with 'power.'.
-CREATE PERFETTO FUNCTION androidx_power_metrics(
-  -- Start timestamp of the measurement range.
-  start_ts TIMESTAMP,
-  -- End timestamp of the measurement range.
-  end_ts TIMESTAMP
-)
-RETURNS TABLE(
+-- Power rail metrics (energy and average power) calculated over the entire trace.
+CREATE PERFETTO TABLE androidx_power_metrics(
   -- Name of the power rail counter track.
   track_name STRING,
-  -- Energy consumed in microwatt-seconds (uWs) during the range.
+  -- Energy consumed in microwatt-seconds (uWs) over the trace.
   energy_uws DOUBLE,
-  -- Average power in microwatts (uW) during the range.
+  -- Average power in microwatts (uW) over the trace.
   power_uw DOUBLE
 ) AS
 SELECT
@@ -41,5 +34,4 @@ SELECT
 FROM counter c
 JOIN counter_track t ON c.track_id = t.id
 WHERE t.name GLOB 'power.*'
-  AND c.ts >= $start_ts AND c.ts <= $end_ts
 GROUP BY t.name;

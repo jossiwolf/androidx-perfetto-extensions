@@ -17,16 +17,16 @@
 INCLUDE PERFETTO MODULE android.frames.timeline;
 INCLUDE PERFETTO MODULE android.frames.per_frame_metrics;
 
--- Get individual frame timing metrics for a given process.
+-- Individual frame timing metrics for all processes.
 -- Matches UI thread Choreographer callbacks with RenderThread DrawFrame slices
 -- and (on API 31+) frame timeline slices.
-CREATE PERFETTO FUNCTION androidx_frame_timing(
-  -- Glob pattern matching the target process name.
-  process_glob STRING
-)
-RETURNS TABLE(
+CREATE PERFETTO TABLE androidx_frame_timing(
   -- Frame ID (vsync ID or manually generated for legacy).
   frame_id LONG,
+  -- Internal process ID.
+  upid JOINID(process.id),
+  -- Process name.
+  process_name STRING,
   -- CPU duration of the frame (UI thread + RenderThread) in milliseconds.
   cpu_duration_ms DOUBLE,
   -- UI thread duration (Choreographer#doFrame) in milliseconds.
@@ -38,6 +38,8 @@ RETURNS TABLE(
 ) AS
 SELECT
   f.frame_id,
+  f.upid,
+  f.process_name,
   (COALESCE(
     (SELECT s.ts + s.dur FROM slice s WHERE s.id = f.draw_frame_id),
     (SELECT s.ts + s.dur FROM slice s WHERE s.id = f.do_frame_id)
@@ -60,5 +62,4 @@ SELECT
     ELSE NULL
   END) / 1e6 AS full_duration_ms
 FROM android_frames f
-LEFT JOIN android_frames_overrun overrun USING (frame_id)
-WHERE f.process_name GLOB $process_glob;
+LEFT JOIN android_frames_overrun overrun USING (frame_id);

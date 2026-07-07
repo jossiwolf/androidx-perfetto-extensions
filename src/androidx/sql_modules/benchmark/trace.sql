@@ -14,26 +14,33 @@
 -- limitations under the License.
 --
 
--- Get slices matching a specific name pattern for a given process.
--- Useful for calculating custom trace section durations.
-CREATE PERFETTO FUNCTION androidx_trace_slices(
-  -- Glob pattern matching the slice name (e.g. 'MyCustomSlice%' or 'Choreographer#doFrame%').
-  section_glob STRING,
-  -- Glob pattern matching the target process name.
-  process_glob STRING
-)
-RETURNS TABLE(
+-- View exposing all trace slices with process and thread context.
+-- Useful for querying custom trace section durations.
+CREATE PERFETTO VIEW androidx_trace_slices(
   -- Slice start timestamp.
   ts TIMESTAMP,
   -- Slice duration.
   dur DURATION,
   -- Slice name.
-  name STRING
+  name STRING,
+  -- Process name.
+  process_name STRING,
+  -- Thread name.
+  thread_name STRING,
+  -- Internal process ID.
+  upid JOINID(process.id),
+  -- Internal thread ID.
+  utid JOINID(thread.id)
 ) AS
-SELECT slice.ts, slice.dur, slice.name
+SELECT
+  slice.ts,
+  slice.dur,
+  slice.name,
+  process.name AS process_name,
+  thread.name AS thread_name,
+  process.upid,
+  thread.utid
 FROM slice
 JOIN thread_track ON slice.track_id = thread_track.id
 JOIN thread USING(utid)
-JOIN process USING(upid)
-WHERE slice.name GLOB $section_glob
-  AND process.name GLOB $process_glob;
+JOIN process USING(upid);

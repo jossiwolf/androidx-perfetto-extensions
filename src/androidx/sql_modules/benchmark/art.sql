@@ -14,35 +14,12 @@
 -- limitations under the License.
 --
 
--- Helper to sum and count slices matching a pattern.
-CREATE PERFETTO FUNCTION _art_slice_stats(
-  -- Glob pattern matching the slice name.
-  pattern STRING,
-  -- Glob pattern matching the target process name.
-  process_glob STRING
-)
-RETURNS TABLE(
-  -- Sum of durations in milliseconds.
-  sum_dur_ms DOUBLE,
-  -- Count of slices.
-  count INT
-) AS
-SELECT
-  COALESCE(SUM(dur) / 1e6, 0.0) AS sum_dur_ms,
-  COUNT(1) AS count
-FROM slice
-JOIN thread_track ON slice.track_id = thread_track.id
-JOIN thread USING(utid)
-JOIN process USING(upid)
-WHERE slice.name GLOB $pattern
-  AND process.name GLOB $process_glob;
-
--- Get ART metrics (JIT, class verification, class loading) for a given process.
-CREATE PERFETTO FUNCTION androidx_art_metrics(
-  -- Glob pattern matching the target process name.
-  process_glob STRING
-)
-RETURNS TABLE(
+-- ART metrics (JIT, class verification, class loading) for all processes.
+CREATE PERFETTO TABLE androidx_art_metrics(
+  -- Internal process ID.
+  upid JOINID(process.id),
+  -- Process name.
+  process_name STRING,
   -- Total JIT compilation duration in milliseconds.
   jit_sum_ms DOUBLE,
   -- Total JIT compilation count.
@@ -56,10 +33,44 @@ RETURNS TABLE(
   -- Total class loading count.
   class_load_count INT
 ) AS
+WITH
+  art_slices AS (
+    SELECT
+      process.upid,
+      process.name AS process_name,
+      slice.name AS slice_name,
+      slice.dur
+    FROM slice
+    JOIN thread_track ON slice.track_id = thread_track.id
+    JOIN thread USING(utid)
+    JOIN process USING(upid)
+    WHERE slice.name GLOB 'JIT Compiling*'
+       OR slice.name GLOB 'VerifyClass*'
+       OR slice.name GLOB 'L*;'
+  ),
+  jit AS (
+    SELECT upid, COALESCE(SUM(dur) / 1e6, 0.0) AS sum_dur, COUNT(1) AS count
+    FROM art_slices WHERE slice_name GLOB 'JIT Compiling*' GROUP BY upid
+  ),
+  verify AS (
+    SELECT upid, COALESCE(SUM(dur) / 1e6, 0.0) AS sum_dur, COUNT(1) AS count
+    FROM art_slices WHERE slice_name GLOB 'VerifyClass*' GROUP BY upid
+  ),
+  load AS (
+    SELECT upid, COALESCE(SUM(dur) / 1e6, 0.0) AS sum_dur, COUNT(1) AS count
+    FROM art_slices WHERE slice_name GLOB 'L*;' GROUP BY upid
+  )
 SELECT
-  (SELECT sum_dur_ms FROM _art_slice_stats('JIT Compiling*', $process_glob)) AS jit_sum_ms,
-  (SELECT count FROM _art_slice_stats('JIT Compiling*', $process_glob)) AS jit_count,
-  (SELECT sum_dur_ms FROM _art_slice_stats('VerifyClass*', $process_glob)) AS verify_class_sum_ms,
-  (SELECT count FROM _art_slice_stats('VerifyClass*', $process_glob)) AS verify_class_count,
-  (SELECT sum_dur_ms FROM _art_slice_stats('L*;', $process_glob)) AS class_load_sum_ms,
-  (SELECT count FROM _art_slice_stats('L*;', $process_glob)) AS class_load_count;
+  p.upid,
+  p.name AS process_name,
+  COALESCE(jit.sum_dur, 0.0) AS jit_sum_ms,
+  COALESCE(jit.count, 0) AS jit_count,
+  COALESCE(verify.sum_dur, 0.0) AS verify_class_sum_ms,
+  COALESCE(verify.count, 0) AS verify_class_count,
+  COALESCE(load.sum_dur, 0.0) AS class_load_sum_ms,
+  COALESCE(load.count, 0) AS class_load_count
+FROM process p
+LEFT JOIN jit USING(upid)
+LEFT JOIN verify USING(upid)
+LEFT JOIN load USING(upid)
+WHERE jit.upid IS NOT NULL OR verify.upid IS NOT NULL OR load.upid IS NOT NULL;

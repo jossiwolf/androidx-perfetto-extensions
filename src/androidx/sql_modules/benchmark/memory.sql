@@ -14,81 +14,77 @@
 -- limitations under the License.
 --
 
--- Get maximum memory usage (RSS, Heap, GPU) in KB for a given process.
-CREATE PERFETTO FUNCTION androidx_memory_usage_max(
-  -- Glob pattern matching the target process name.
-  process_glob STRING
-)
-RETURNS TABLE(
+-- Memory usage metrics (RSS, Heap, GPU) in KB for all processes.
+-- Exposes both maximum (max) and last observed (last) values.
+CREATE PERFETTO TABLE androidx_memory_usage(
+  -- Internal process ID.
+  upid JOINID(process.id),
+  -- Process name.
+  process_name STRING,
   -- Name of the memory counter track.
   counter_name STRING,
-  -- Maximum value observed, converted to KB.
-  max_value_kb DOUBLE
-) AS
-SELECT
-  track.name AS counter_name,
-  MAX(value) / IIF(track.name = 'Heap size (KB)', 1.0, 1024.0) AS max_value_kb
-FROM counter
-LEFT JOIN process_counter_track AS track ON counter.track_id = track.id
-LEFT JOIN process USING (upid)
-WHERE process.name GLOB $process_glob
-  AND (
-    track.name LIKE 'mem.rss%' OR
-    track.name = 'Heap size (KB)' OR
-    track.name = 'GPU Memory'
-  )
-GROUP BY counter_name;
-
--- Get last observed memory usage (RSS, Heap, GPU) in KB for a given process.
-CREATE PERFETTO FUNCTION androidx_memory_usage_last(
-  -- Glob pattern matching the target process name.
-  process_glob STRING
-)
-RETURNS TABLE(
-  -- Name of the memory counter track.
-  counter_name STRING,
-  -- Last value observed, converted to KB.
+  -- Maximum value observed in KB.
+  max_value_kb DOUBLE,
+  -- Last observed value in KB.
   last_value_kb DOUBLE
 ) AS
-WITH ranked_counters AS (
-  SELECT
-    track.name AS counter_name,
-    value,
-    ROW_NUMBER() OVER (PARTITION BY track.id ORDER BY ts DESC) as rn,
-    track.name = 'Heap size (KB)' as already_in_kb
-  FROM counter
-  LEFT JOIN process_counter_track AS track ON counter.track_id = track.id
-  LEFT JOIN process USING (upid)
-  WHERE process.name GLOB $process_glob
-    AND (
-      track.name LIKE 'mem.rss%' OR
-      track.name = 'Heap size (KB)' OR
-      track.name = 'GPU Memory'
+WITH
+  max_val AS (
+    SELECT
+      upid,
+      track.name AS counter_name,
+      MAX(value) / IIF(track.name = 'Heap size (KB)', 1.0, 1024.0) AS max_value_kb
+    FROM counter
+    LEFT JOIN process_counter_track AS track ON counter.track_id = track.id
+    WHERE track.name LIKE 'mem.rss%' OR track.name = 'Heap size (KB)' OR track.name = 'GPU Memory'
+    GROUP BY upid, counter_name
+  ),
+  last_val AS (
+    SELECT
+      upid,
+      counter_name,
+      value / IIF(already_in_kb, 1.0, 1024.0) AS last_value_kb
+    FROM (
+      SELECT
+        upid,
+        track.name AS counter_name,
+        value,
+        ROW_NUMBER() OVER (PARTITION BY track.id ORDER BY ts DESC) as rn,
+        track.name = 'Heap size (KB)' as already_in_kb
+      FROM counter
+      LEFT JOIN process_counter_track AS track ON counter.track_id = track.id
+      WHERE track.name LIKE 'mem.rss%' OR track.name = 'Heap size (KB)' OR track.name = 'GPU Memory'
     )
-)
+    WHERE rn = 1
+  )
 SELECT
-  counter_name,
-  value / IIF(already_in_kb, 1.0, 1024.0) AS last_value_kb
-FROM ranked_counters
-WHERE rn = 1;
+  p.upid,
+  p.name AS process_name,
+  m.counter_name,
+  m.max_value_kb,
+  l.last_value_kb
+FROM process p
+JOIN max_val m ON p.upid = m.upid
+JOIN last_val l ON p.upid = l.upid AND l.counter_name = m.counter_name;
 
--- Get total counts for memory events (page faults, compaction, reclaim) for a given process.
-CREATE PERFETTO FUNCTION androidx_memory_counters(
-  -- Glob pattern matching the target process name.
-  process_glob STRING
-)
-RETURNS TABLE(
+-- Total counts for memory events (page faults, compaction, reclaim) for all processes.
+CREATE PERFETTO TABLE androidx_memory_counters(
+  -- Internal process ID.
+  upid JOINID(process.id),
+  -- Process name.
+  process_name STRING,
   -- Name of the memory event counter track.
   counter_name STRING,
   -- Sum of the counter values over the trace.
   total_count DOUBLE
 ) AS
 SELECT
+  p.upid,
+  p.name AS process_name,
   track.name AS counter_name,
   SUM(value) AS total_count
 FROM counter
 LEFT JOIN process_counter_track AS track ON counter.track_id = track.id
-LEFT JOIN process USING (upid)
-WHERE process.name GLOB $process_glob
-  AND track.name LIKE 'mem.%.count'
-GROUP BY counter_name;
+LEFT JOIN process p USING (upid)
+WHERE track.name LIKE 'mem.%.count'
+GROUP BY upid, counter_name;

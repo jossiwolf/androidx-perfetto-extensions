@@ -14,15 +14,8 @@
 -- limitations under the License.
 --
 
--- Get battery discharge metrics (start, end, and diff in mAh) for a given time range.
--- Queries counter track 'batt.charge_uah'.
-CREATE PERFETTO FUNCTION androidx_battery_discharge(
-  -- Start timestamp of the measurement range.
-  start_ts TIMESTAMP,
-  -- End timestamp of the measurement range.
-  end_ts TIMESTAMP
-)
-RETURNS TABLE(
+-- Battery discharge metrics (start, end, and diff in mAh) calculated over the entire trace.
+CREATE PERFETTO TABLE androidx_battery_discharge(
   -- Start battery charge in mAh.
   start_mah DOUBLE,
   -- End battery charge in mAh.
@@ -36,5 +29,4 @@ SELECT
   (MAX(c.value) - MIN(c.value)) / 1000.0 AS diff_mah
 FROM counter c
 JOIN counter_track t ON c.track_id = t.id
-WHERE t.name = 'batt.charge_uah'
-  AND c.ts >= $start_ts AND c.ts <= $end_ts;
+WHERE t.name = 'batt.charge_uah';
