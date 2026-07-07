@@ -1,6 +1,0 @@
-id: androidx.ShowLongTasks
-name: Show Long Tasks
-run:
-  - id: dev.perfetto.RunQueryAndShowTab
-    args:
-      - "SELECT * FROM slice WHERE dur > 50000000 AND name LIKE '%Task%'"

@@ -1,1 +1,0 @@
-CREATE PERFETTO VIEW IF NOT EXISTS janky_frames AS SELECT * FROM slice WHERE name = 'FramePresented' AND dur > 16666666;

@@ -1,6 +1,0 @@
-id: androidx.ShowBinderTransactions
-name: Show Binder Transactions
-run:
-  - id: dev.perfetto.RunQueryAndShowTab
-    args:
-      - "SELECT * FROM android_binder_txns LIMIT 100"

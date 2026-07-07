@@ -1,9 +1,5 @@
 name: AndroidX Perfetto Extensions
 namespace: androidx
 modules:
-  - id: android
-    name: Android
-  - id: chrome
-    name: Chrome
   - id: default
     name: Default

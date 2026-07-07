@@ -1,1 +1,0 @@
-CREATE PERFETTO VIEW IF NOT EXISTS top_processes AS SELECT upid, name, SUM(dur) as total_dur FROM sched GROUP BY upid ORDER BY total_dur DESC LIMIT 10;

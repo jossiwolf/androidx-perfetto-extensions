@@ -1,6 +1,0 @@
-id: androidx.ChromeFrameAnalysis
-name: Chrome Frame Analysis
-run:
-  - id: dev.perfetto.RunQueryAndShowTab
-    args:
-      - "SELECT * FROM chrome_frame_times"

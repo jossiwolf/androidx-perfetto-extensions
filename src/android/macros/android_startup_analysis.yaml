@@ -1,6 +1,0 @@
-id: androidx.AndroidStartupAnalysis
-name: Android Startup Analysis
-run:
-  - id: dev.perfetto.RunQueryAndShowTab
-    args:
-      - "SELECT * FROM android_startup"

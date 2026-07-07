@@ -1,5 +1,0 @@
-id: androidx.ShowAllTracks
-name: Show All Tracks
-run:
-  - id: dev.perfetto.ShowAllTracks
-    args: []
