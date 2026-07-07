@@ -1,5 +1,5 @@
 name: AndroidX Perfetto Extensions
 namespace: androidx
 modules:
-  - id: default
-    name: Default
+  - id: androidx
+    name: AndroidX

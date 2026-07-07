@@ -14,8 +14,8 @@
   ],
   "modules": [
     {
-      "id": "default",
-      "name": "Default"
+      "id": "androidx",
+      "name": "AndroidX"
     }
   ]
 }
